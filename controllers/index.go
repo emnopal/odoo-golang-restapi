@@ -6,30 +6,35 @@ import (
 	"log"
 	"net/http"
 
-	helper "github.com/emnopal/go_helper"
-	"github.com/emnopal/go_postgres/models"
-	schemas "github.com/emnopal/go_postgres/schemas/json"
+	send "github.com/emnopal/go_postgres/models/jsonResponse"
+	resPartner "github.com/emnopal/go_postgres/models/resPartner"
+	json_schema "github.com/emnopal/go_postgres/schemas/json"
+	h "github.com/emnopal/go_postgres/utils/HeaderHandler"
 )
 
-type IndexModels struct {
-	Model *models.Models
+type IndexController struct{}
+
+func (attr *IndexController) Index(w http.ResponseWriter, req *http.Request) {
+	headParams := &h.HeaderParams{}
+	h.SetHeader(w, headParams)
+	result, err := resPartner.GetResPartner()
+	j := &send.JsonSendHandler{W: w, Req: req}
+	j.SendJson(result, err)
 }
 
-func (m *IndexModels) Index(w http.ResponseWriter, req *http.Request) {
+func (attr *IndexController) Contoh(w http.ResponseWriter, req *http.Request) {
 
-	log.Print(m.Model.DB)
-
-	headParams := &helper.HeaderParams{
+	headParams := &h.HeaderParams{
 		AccessControlAllowMethods: "GET, POST",
 	}
-	helper.SetHeader(w, headParams)
+	h.SetHeader(w, headParams)
 
 	message := ""
 	status := http.StatusOK
 
 	query_param := req.URL.Query().Get("query_param")
 
-	var t schemas.ExampleJSON
+	var t json_schema.ExampleJSON
 	JSONBody := ""
 
 	if req.Method == "POST" {

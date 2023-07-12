@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	helper "github.com/emnopal/go_helper"
+	env "github.com/emnopal/go_postgres/utils/env"
 )
 
 type ServerEnv struct {
@@ -12,12 +12,10 @@ type ServerEnv struct {
 }
 
 func loadServerEnv() (envConfig *ServerEnv) {
-	loadEnv()
-
+	env.LoadEnv()
 	envConfig = &ServerEnv{
-		PORTS: helper.GetENV("PORTS", ":3000"),
+		PORTS: env.GetENV("PORTS", ":3000"),
 	}
-
 	return
 }
 
@@ -28,8 +26,6 @@ func GetPort() (PORTS string) {
 }
 
 func ServerConfig() {
-
 	envConfig := loadServerEnv()
-
 	log.Fatal(http.ListenAndServe(envConfig.PORTS, nil))
 }

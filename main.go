@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func RunMainService() {
+func main() {
 	PORTS := config.GetPort()
 	log.Printf("Listing for requests at http://localhost%s/", PORTS)
 	routes.Routes()
