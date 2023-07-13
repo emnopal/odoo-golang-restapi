@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 
-	prop "github.com/emnopal/go_postgres/schemas/db/prop"
 	r "github.com/emnopal/go_postgres/schemas/json/response"
 )
 
@@ -21,7 +20,6 @@ type JsonSendGetHandler struct {
 	CustomSuccessRespStatus int
 	CustomErrorRespData     interface{}
 	CustomSuccessRespData   interface{}
-	DataProp                *prop.DataProp
 }
 
 func (j *JsonSendGetHandler) SendJsonGet(result interface{}, err error) {
@@ -55,7 +53,7 @@ func (j *JsonSendGetHandler) SendJsonGet(result interface{}, err error) {
 		return
 	}
 
-	SuccessLogMsg := fmt.Sprintf("Success get: %s", j.Req.URL.Path)
+	SuccessLogMsg := fmt.Sprintf("Success get: %s", j.Req.URL.RequestURI())
 	if j.CustomSuccessLogMsg != "" {
 		SuccessLogMsg = j.CustomSuccessLogMsg
 	}
@@ -74,16 +72,6 @@ func (j *JsonSendGetHandler) SendJsonGet(result interface{}, err error) {
 	resp.Data = result
 	if j.CustomSuccessRespData != nil {
 		resp.Data = j.CustomSuccessRespData
-	}
-
-	resp.Length = 0
-	resp.TotalPage = 0
-	resp.CurrentPage = 0
-
-	if j.DataProp != nil {
-		resp.Length = j.DataProp.Length
-		resp.TotalPage = j.DataProp.TotalPage
-		resp.CurrentPage = j.DataProp.CurrentPage
 	}
 
 	j.W.WriteHeader(resp.Status)

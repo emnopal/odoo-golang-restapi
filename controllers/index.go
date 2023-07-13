@@ -2,14 +2,10 @@ package controller
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
-	send "github.com/emnopal/go_postgres/models/jsonResponse"
-	resPartner "github.com/emnopal/go_postgres/models/resPartner"
 	json_schema "github.com/emnopal/go_postgres/schemas/json"
 	h "github.com/emnopal/go_postgres/utils/HeaderHandler"
 )
@@ -17,42 +13,6 @@ import (
 type IndexController struct{}
 
 func (attr *IndexController) Index(w http.ResponseWriter, req *http.Request) {
-	headParams := &h.HeaderParams{}
-	h.SetHeader(w, headParams)
-
-	queryParams := req.URL.Query()
-
-	if req.Method != "GET" {
-		j := &send.JsonSendGetHandler{W: w, Req: req}
-		err := errors.New("method not allowed")
-		j.CustomErrorRespStatus = http.StatusMethodNotAllowed
-		j.SendJsonGet(nil, err)
-		return
-	}
-
-	page := 0
-	if queryParams.Get("page") != "" {
-		var convErr error
-		page, convErr = strconv.Atoi(req.URL.Query().Get("page"))
-		if convErr != nil {
-			log.Println("strconv error occured: ", convErr.Error())
-			page = 0
-		}
-	}
-
-	RP := &resPartner.ResPartner{Limit: 30}
-	resultLength := RP.ResPartnerProp()
-	resultLength.CurrentPage = uint(page)
-	result, err := RP.GetResPartner(resultLength.CurrentPage)
-	j := &send.JsonSendGetHandler{W: w, Req: req, DataProp: resultLength}
-	if result == nil {
-		err = errors.New("null result")
-		j.CustomErrorRespStatus = http.StatusNotFound
-	}
-	j.SendJsonGet(result, err)
-}
-
-func (attr *IndexController) Contoh(w http.ResponseWriter, req *http.Request) {
 
 	headParams := &h.HeaderParams{
 		AccessControlAllowMethods: "GET, POST",

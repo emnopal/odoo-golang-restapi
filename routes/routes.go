@@ -3,11 +3,14 @@ package routes
 import (
 	"net/http"
 
-	controller "github.com/emnopal/go_postgres/controllers"
+	indexController "github.com/emnopal/go_postgres/controllers"
+	resPartnerController "github.com/emnopal/go_postgres/controllers/resPartner"
 )
 
 func Routes() {
-	index := &controller.IndexController{}
-	http.HandleFunc("/", index.Index)
-	http.HandleFunc("/contoh", index.Contoh)
+	index := &indexController.IndexController{}
+	resPartner := &resPartnerController.ResPartnerController{}
+
+	http.HandleFunc("/contoh", index.Index)
+	http.HandleFunc("/", resPartner.GetResPartner)
 }
