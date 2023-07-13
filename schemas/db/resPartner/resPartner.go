@@ -16,3 +16,8 @@ type ResPartner struct {
 	// Type       string `json:"type"`
 	// Phone      string `json:"phone"`
 }
+
+type CreateResPartner struct {
+	Name  nulls.NullString `json:"name"`
+	Email nulls.NullString `json:"email"`
+}

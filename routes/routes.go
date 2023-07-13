@@ -11,6 +11,7 @@ func Routes(r *gin.Engine) *gin.Engine {
 
 	resPartner := &resPartnerController.ResPartnerController{}
 	r.GET("/", resPartner.GetResPartner)
+	r.POST("/", resPartner.CreateResPartner)
 	r.GET("/:id", resPartner.GetResPartnerById)
 
 	index := &indexController.IndexController{}

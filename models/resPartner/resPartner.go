@@ -204,3 +204,43 @@ func (r *ResPartner) GetResPartnerBy(searchQuery string, page uint) (result *pro
 
 	return
 }
+
+func (r *ResPartner) CreateResPartner(request *db_schema.CreateResPartner) (err error) {
+	db, err := config.DBConfig()
+
+	if err != nil {
+		log.Fatalf("Some error occured. Err: %s", err)
+	}
+
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println("CreateUsers begin() error: ", err.Error())
+		return err
+	}
+
+	// insert into database
+	query := `
+		INSERT INTO "res_partner" (
+			"name", "email", "create_date", "display_name",
+			"lang", "tz", "active", "type", "is_company", "write_date")
+		VALUES ($1, $2, NOW(), $1, 'en_US', 'Asia/Tokyo', True, 'contact', False, NOW())
+	`
+
+	_, err = tx.Exec(query, request.Name, request.Email)
+
+	if err != nil {
+		tx.Rollback()
+		log.Println("error insert: ", err.Error())
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		tx.Rollback()
+		log.Println("error commit: ", err.Error())
+	}
+
+	return nil
+}
