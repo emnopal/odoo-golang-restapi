@@ -2,9 +2,9 @@ package config
 
 import (
 	"log"
-	"net/http"
 
 	env "github.com/emnopal/go_postgres/utils/env"
+	"github.com/gin-gonic/gin"
 )
 
 type ServerEnv struct {
@@ -25,7 +25,8 @@ func GetPort() (PORTS string) {
 	return
 }
 
-func ServerConfig() {
+func ServerConfig(r *gin.Engine) {
 	envConfig := loadServerEnv()
-	log.Fatal(http.ListenAndServe(envConfig.PORTS, nil))
+	r.HandleMethodNotAllowed = true
+	log.Fatal(r.Run(envConfig.PORTS))
 }

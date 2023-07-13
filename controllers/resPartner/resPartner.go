@@ -8,31 +8,22 @@ import (
 
 	send "github.com/emnopal/go_postgres/models/jsonResponse"
 	resPartner "github.com/emnopal/go_postgres/models/resPartner"
-	h "github.com/emnopal/go_postgres/utils/HeaderHandler"
+	"github.com/gin-gonic/gin"
 )
 
 type ResPartnerController struct{}
 
-func (attr *ResPartnerController) GetResPartner(w http.ResponseWriter, req *http.Request) {
-	headParams := &h.HeaderParams{
-		AccessControlAllowMethods: "GET",
-	}
-	h.SetHeader(w, headParams)
-
-	queryParams := req.URL.Query()
-
-	if req.Method != "GET" {
-		j := &send.JsonSendGetHandler{W: w, Req: req}
-		err := errors.New("method not allowed")
-		j.CustomErrorRespStatus = http.StatusMethodNotAllowed
-		j.SendJsonGet(nil, err)
-		return
-	}
+func (attr *ResPartnerController) GetResPartner(c *gin.Context) {
+	queryParams := c.Request.URL.Query()
+	pageParams := queryParams.Get("page")
+	limitParams := queryParams.Get("limit")
+	searchParams := queryParams.Get("search")
+	ignorePerformanceParams := queryParams.Get("ignore_performance")
 
 	page := 0
-	if queryParams.Get("page") != "" {
+	if pageParams != "" {
 		var convErr error
-		page, convErr = strconv.Atoi(req.URL.Query().Get("page"))
+		page, convErr = strconv.Atoi(pageParams)
 		if convErr != nil {
 			log.Println("strconv error occured: ", convErr.Error())
 			page = 0
@@ -40,22 +31,56 @@ func (attr *ResPartnerController) GetResPartner(w http.ResponseWriter, req *http
 	}
 
 	limit := 10
-	if queryParams.Get("limit") != "" {
+	if limitParams != "" {
 		var convErr error
-		limit, convErr = strconv.Atoi(req.URL.Query().Get("limit"))
+		limit, convErr = strconv.Atoi(limitParams)
 		if convErr != nil {
 			log.Println("strconv error occured: ", convErr.Error())
 			limit = 10
 		}
-		if limit > 10_000 {
-			limit = 100
+	}
+
+	ignorePerformance := false
+	if ignorePerformanceParams != "" {
+		var convErr error
+		ignorePerformance, convErr = strconv.ParseBool(ignorePerformanceParams)
+		if convErr != nil {
+			log.Println("strconv error occured: ", convErr.Error())
+			ignorePerformance = false
+			ignorePerformanceParams = "false"
 		}
 	}
 
-	RP := &resPartner.ResPartner{Limit: uint(limit)}
+	RP := &resPartner.ResPartner{Limit: uint(limit), IgnorePerformance: ignorePerformance}
+
+	if searchParams != "" {
+		searchQuery := searchParams
+		currentPage := uint(page)
+		result, err := RP.GetResPartnerBy(searchQuery, currentPage)
+		j := &send.JsonSendGetHandler{GinContext: c}
+		if result == nil {
+			err = errors.New("null result")
+			j.CustomErrorRespStatus = http.StatusNotFound
+		}
+		j.SendJsonGet(result, err)
+		return
+	}
+
 	currentPage := uint(page)
-	result, err := RP.GetResPartnerAll(currentPage)
-	j := &send.JsonSendGetHandler{W: w, Req: req}
+	result, err := RP.GetResPartner(currentPage)
+	j := &send.JsonSendGetHandler{GinContext: c}
+	if result == nil {
+		err = errors.New("null result")
+		j.CustomErrorRespStatus = http.StatusNotFound
+	}
+	j.SendJsonGet(result, err)
+}
+
+func (attr *ResPartnerController) GetResPartnerById(c *gin.Context) {
+	RP := &resPartner.ResPartner{}
+	id := c.Param("id")
+	result, err := RP.GetResPartnerById(id)
+	j := &send.JsonSendGetHandler{GinContext: c}
 	if result == nil {
 		err = errors.New("null result")
 		j.CustomErrorRespStatus = http.StatusNotFound

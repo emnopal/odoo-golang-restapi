@@ -1,16 +1,27 @@
 package routes
 
 import (
-	"net/http"
-
 	indexController "github.com/emnopal/go_postgres/controllers"
+	noRouteAndMethodController "github.com/emnopal/go_postgres/controllers/handlerNoRouteAndMethod"
 	resPartnerController "github.com/emnopal/go_postgres/controllers/resPartner"
+	"github.com/gin-gonic/gin"
 )
 
-func Routes() {
-	index := &indexController.IndexController{}
-	resPartner := &resPartnerController.ResPartnerController{}
+func Routes(r *gin.Engine) *gin.Engine {
 
-	http.HandleFunc("/contoh", index.Index)
-	http.HandleFunc("/", resPartner.GetResPartner)
+	resPartner := &resPartnerController.ResPartnerController{}
+	r.GET("/", resPartner.GetResPartner)
+	r.GET("/:id", resPartner.GetResPartnerById)
+
+	index := &indexController.IndexController{}
+	r.GET("/contoh", index.Index)
+	r.POST("/contoh", index.Index)
+
+	handlerNoRoute := &noRouteAndMethodController.NoRouteController{}
+	r.NoRoute(handlerNoRoute.NoRouteHandler)
+
+	handlerNoMethod := &noRouteAndMethodController.NoMethodController{}
+	r.NoMethod(handlerNoMethod.NoMethodHandler)
+
+	return r
 }

@@ -1,17 +1,16 @@
 package models
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 
 	r "github.com/emnopal/go_postgres/schemas/json/response"
+	"github.com/gin-gonic/gin"
 )
 
 type JsonSendGetHandler struct {
-	W                       http.ResponseWriter
-	Req                     *http.Request
+	GinContext              *gin.Context
 	CustomErrorLogMsg       string
 	CustomSuccessLogMsg     string
 	CustomErrorRespMsg      string
@@ -27,6 +26,9 @@ func (j *JsonSendGetHandler) SendJsonGet(result interface{}, err error) {
 	var resp r.GetResponse
 
 	if err != nil {
+
+		resp.Success = false
+
 		ErrorLogMsg := fmt.Sprintf("Error occured: %s", err.Error())
 		if j.CustomErrorLogMsg != "" {
 			ErrorLogMsg = j.CustomErrorLogMsg
@@ -48,12 +50,13 @@ func (j *JsonSendGetHandler) SendJsonGet(result interface{}, err error) {
 			resp.Data = j.CustomErrorRespData
 		}
 
-		j.W.WriteHeader(resp.Status)
-		json.NewEncoder(j.W).Encode(resp)
+		j.GinContext.JSON(resp.Status, resp)
 		return
 	}
 
-	SuccessLogMsg := fmt.Sprintf("Success get: %s", j.Req.URL.RequestURI())
+	resp.Success = true
+
+	SuccessLogMsg := fmt.Sprintf("Success get: %s", j.GinContext.Request.URL.RequestURI())
 	if j.CustomSuccessLogMsg != "" {
 		SuccessLogMsg = j.CustomSuccessLogMsg
 	}
@@ -74,6 +77,5 @@ func (j *JsonSendGetHandler) SendJsonGet(result interface{}, err error) {
 		resp.Data = j.CustomSuccessRespData
 	}
 
-	j.W.WriteHeader(resp.Status)
-	json.NewEncoder(j.W).Encode(resp)
+	j.GinContext.JSON(resp.Status, resp)
 }
