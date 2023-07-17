@@ -9,7 +9,6 @@ type ResPartner struct {
 	Name       nulls.NullString `json:"name"`
 	Email      nulls.NullString `json:"email"`
 	CreateDate nulls.NullTime   `json:"create_date"`
-	// CreateDate nulls.NullString `json:"create_date"`
 	// Active     string `json:"active"`
 	// Language   string `json:"language"`
 	// Timezone   string `json:"timezone"`

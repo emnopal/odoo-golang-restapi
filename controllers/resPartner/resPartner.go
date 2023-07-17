@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	send "github.com/emnopal/go_postgres/models/jsonResponse"
@@ -15,27 +16,23 @@ import (
 
 type ResPartnerController struct{}
 
-// Get all res partner column
-//
-// URL: /?page={}&limit={}&search={}&ignore_performance={}
-//
-// Params:
-//
-// - page (uint): cursor for pagination in database
-//
-// - limit (uint): limit for database query (to enhance performance)
-//
-// - search (string): search for some string inside query
-//
-// - ignore_performance (boolean): ignoring for some performance tweak.
-// If true, some performance tweak will be ignored.
-// Note: i don't recommend to use this parameter
+const (
+	DefaultLimit             = 100
+	DefaultIgnorePerformance = false
+)
+
 func (attr *ResPartnerController) GetResPartner(c *gin.Context) {
 	queryParams := c.Request.URL.Query()
-	pageParams := queryParams.Get("page")
-	limitParams := queryParams.Get("limit")
-	searchParams := queryParams.Get("search")
-	ignorePerformanceParams := queryParams.Get("ignore_performance")
+	pageParams := url.QueryEscape(queryParams.Get("page"))
+	limitParams := url.QueryEscape(queryParams.Get("limit"))
+	searchParams := url.QueryEscape(queryParams.Get("search"))
+	sortParams := url.QueryEscape(queryParams.Get("sort"))
+	ignorePerformanceParams := url.QueryEscape(queryParams.Get("ignore_performance"))
+
+	sort := "id"
+	if sortParams != "" {
+		sort = sortParams
+	}
 
 	page := 0
 	if pageParams != "" {
@@ -47,74 +44,71 @@ func (attr *ResPartnerController) GetResPartner(c *gin.Context) {
 		}
 	}
 
-	limit := 10
+	limit := DefaultLimit
 	if limitParams != "" {
 		var convErr error
 		limit, convErr = strconv.Atoi(limitParams)
 		if convErr != nil {
 			log.Println("strconv error occured: ", convErr.Error())
-			limit = 10
+			limit = DefaultLimit
 		}
 	}
 
-	ignorePerformance := false
+	ignorePerformance := DefaultIgnorePerformance
 	if ignorePerformanceParams != "" {
 		var convErr error
 		ignorePerformance, convErr = strconv.ParseBool(ignorePerformanceParams)
 		if convErr != nil {
 			log.Println("strconv error occured: ", convErr.Error())
-			ignorePerformance = false
-			ignorePerformanceParams = "false"
+			ignorePerformance = DefaultIgnorePerformance
 		}
 	}
 
-	RP := &resPartner.ResPartner{Limit: uint(limit), IgnorePerformance: ignorePerformance}
-
+	RP := &resPartner.ResPartner{}
 	if searchParams != "" {
 		searchQuery := searchParams
 		currentPage := uint(page)
-		result, err := RP.GetResPartnerBy(searchQuery, currentPage)
+		result, err := RP.GetResPartnerBy(searchQuery, currentPage, uint(limit), sort, ignorePerformance)
 		j := &send.JsonSendGetHandler{GinContext: c}
-		if result == nil {
-			err = errors.New("null result")
-			j.CustomErrorRespStatus = http.StatusNotFound
+		if err != nil {
+			if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+				err = errors.New("null result")
+				j.CustomErrorRespStatus = http.StatusNotFound
+			}
 		}
 		j.SendJsonGet(result, err)
 		return
 	}
 
 	currentPage := uint(page)
-	result, err := RP.GetResPartner(currentPage)
+	result, err := RP.GetResPartner(currentPage, uint(limit), sort, ignorePerformance)
+
 	j := &send.JsonSendGetHandler{GinContext: c}
-	if result == nil {
-		err = errors.New("null result")
-		j.CustomErrorRespStatus = http.StatusNotFound
+
+	if err != nil {
+		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+			err = errors.New("null result")
+			j.CustomErrorRespStatus = http.StatusNotFound
+		}
 	}
+
 	j.SendJsonGet(result, err)
 }
 
-// Get res partner based on id
-//
-// URL: /:id
-//
-// Params:
-//
-// - id (uint): unique id for res.partner table
 func (attr *ResPartnerController) GetResPartnerById(c *gin.Context) {
 	RP := &resPartner.ResPartner{}
 	id := c.Param("id")
 	result, err := RP.GetResPartnerById(id)
 	j := &send.JsonSendGetHandler{GinContext: c}
-	if result == nil {
-		err = errors.New("null result")
-		j.CustomErrorRespStatus = http.StatusNotFound
+	if err != nil {
+		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+			err = errors.New("null result")
+			j.CustomErrorRespStatus = http.StatusNotFound
+		}
 	}
 	j.SendJsonGet(result, err)
 }
 
-// Create res partner
-//
-// URL: /
 func (attr *ResPartnerController) CreateResPartner(c *gin.Context) {
 	j := &send.JsonSendGetHandler{GinContext: c}
 	RP := &resPartner.ResPartner{}

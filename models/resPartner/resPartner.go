@@ -1,22 +1,23 @@
 package models
 
 import (
-	"database/sql"
-	"fmt"
+	"errors"
 	"log"
 	"math"
 
 	config "github.com/emnopal/go_postgres/configs"
+	common "github.com/emnopal/go_postgres/models/commonSQL"
 	prop "github.com/emnopal/go_postgres/schemas/db/prop"
 	db_schema "github.com/emnopal/go_postgres/schemas/db/resPartner"
 )
 
-type ResPartner struct {
-	Limit             uint
-	IgnorePerformance bool
-}
+type ResPartner struct{}
 
-func (r *ResPartner) GetResPartner(page uint) (result *prop.DataProp, err error) {
+const (
+	TableName = "res_partner"
+)
+
+func (r *ResPartner) GetResPartner(page uint, limit uint, sort string, ignorePerformance bool) (result *prop.DataProp, err error) {
 	db, err := config.DBConfig()
 
 	if err != nil {
@@ -26,39 +27,25 @@ func (r *ResPartner) GetResPartner(page uint) (result *prop.DataProp, err error)
 	defer db.Close()
 
 	// get length of data
-	getLengthDataQuery := `SELECT reltuples::bigint AS estimate FROM pg_class WHERE oid = 'public.res_partner'::regclass;`
-	Length, err := db.Query(getLengthDataQuery)
-
-	if err != nil {
-		log.Println("Query error occured: ", err.Error())
-		return nil, err
-	}
-
-	var length uint
-
-	for Length.Next() {
-		err = Length.Scan(&length)
-		if err != nil {
-			log.Println("Query error occured: ", err.Error())
-			return nil, err
-		}
-	}
-
-	defer Length.Close()
+	cdb := common.CommonDB{}
+	length, err := cdb.GetTableLength(db, TableName)
 
 	// get data
-	query := `SELECT "id", "name", "email", "create_date" FROM "res_partner" ORDER BY "id" offset $1 limit $2`
-	offset := page * r.Limit // limit the data based on length and limit to improve performance
+	Data, err := cdb.StandardGetQuery(db, TableName, &common.GetQueryParams{
+		Columns:           "id, name, email, create_date",
+		Sort:              sort,
+		Page:              page,
+		Limit:             limit,
+		IgnorePerformance: ignorePerformance,
+	})
 
-	var Data *sql.Rows
-
-	if r.IgnorePerformance {
-		Data, err = db.Query(query, 0, length)
-	} else {
-		Data, err = db.Query(query, offset, r.Limit)
-	}
 	var RP db_schema.ResPartner
 	var dataResult []db_schema.ResPartner
+
+	if Data == nil {
+		err = errors.New("404")
+		return nil, err
+	}
 
 	for Data.Next() {
 		err = Data.Scan(&RP.ID, &RP.Name, &RP.Email, &RP.CreateDate)
@@ -71,8 +58,13 @@ func (r *ResPartner) GetResPartner(page uint) (result *prop.DataProp, err error)
 
 	defer Data.Close()
 
-	totalPage := uint(math.Floor(float64(length) / float64(r.Limit)))
-	if r.IgnorePerformance {
+	if len(dataResult) == 0 {
+		err = errors.New("404")
+		return nil, err
+	}
+
+	totalPage := uint(math.Floor(float64(length) / float64(limit)))
+	if ignorePerformance {
 		totalPage = 0
 		page = 0
 	}
@@ -98,11 +90,22 @@ func (r *ResPartner) GetResPartnerById(id string) (result *prop.DataProp, err er
 	defer db.Close()
 
 	// get data
-	query := `SELECT "id", "name", "email", "create_date" FROM "res_partner" WHERE "id" = $1`
+	cdb := common.CommonDB{}
+	Data, err := cdb.GetQueryById(db, TableName, &common.GetQueryParams{
+		Columns: "id, name, email, create_date",
+		Search: map[string]interface{}{
+			"id": id,
+		},
+	})
 
-	Data, err := db.Query(query, id)
 	var RP db_schema.ResPartner
 	var dataResult []db_schema.ResPartner
+
+	if Data == nil {
+		log.Println("isnil")
+		err = errors.New("404")
+		return nil, err
+	}
 
 	for Data.Next() {
 		err = Data.Scan(&RP.ID, &RP.Name, &RP.Email, &RP.CreateDate)
@@ -114,6 +117,11 @@ func (r *ResPartner) GetResPartnerById(id string) (result *prop.DataProp, err er
 	}
 
 	defer Data.Close()
+
+	if len(dataResult) == 0 {
+		err = errors.New("404")
+		return nil, err
+	}
 
 	result = &prop.DataProp{
 		Length:      1,
@@ -125,7 +133,7 @@ func (r *ResPartner) GetResPartnerById(id string) (result *prop.DataProp, err er
 	return
 }
 
-func (r *ResPartner) GetResPartnerBy(searchQuery string, page uint) (result *prop.DataProp, err error) {
+func (r *ResPartner) GetResPartnerBy(searchQuery string, page uint, limit uint, sort string, ignorePerformance bool) (result *prop.DataProp, err error) {
 	db, err := config.DBConfig()
 
 	if err != nil {
@@ -135,46 +143,32 @@ func (r *ResPartner) GetResPartnerBy(searchQuery string, page uint) (result *pro
 	defer db.Close()
 
 	// get length of data
-	getLengthDataQuery := `
-		SELECT SUM(UNION_COUNT.count) FROM ((SELECT count(1) FROM "res_partner" where "name" ilike $1)
-		UNION ALL
-		(SELECT count(1)  FROM "res_partner" where "email" ilike $1)) UNION_COUNT
-	`
-	searchQuery = fmt.Sprintf("%%%s%%", searchQuery)
-	Length, err := db.Query(getLengthDataQuery, searchQuery)
+	cdb := common.CommonDB{}
 
-	if err != nil {
-		log.Println("Query error occured: ", err.Error())
+	queryParams := &common.GetQueryParams{
+		Columns:           "id, name, email, create_date",
+		Page:              page,
+		Limit:             limit,
+		Sort:              sort,
+		IgnorePerformance: ignorePerformance,
+		MatchExactly:      false,
+		Search: map[string]interface{}{
+			"name":  searchQuery,
+			"email": searchQuery,
+		},
+	}
+
+	// get length of data
+	length, err := cdb.GetTableLengthBy(db, TableName, queryParams)
+
+	// get data
+	Data, err := cdb.GetQueryBy(db, TableName, queryParams)
+
+	if Data == nil {
+		err = errors.New("404")
 		return nil, err
 	}
 
-	var length uint
-
-	for Length.Next() {
-		err = Length.Scan(&length)
-		if err != nil {
-			log.Println("Query error occured: ", err.Error())
-			return nil, err
-		}
-	}
-
-	defer Length.Close()
-
-	// get data
-	query := `
-		(SELECT "id", "name", "email", "create_date" FROM "res_partner" where "name" ilike $1 order by id offset $2 limit $3)
-		UNION ALL
-		(SELECT "id", "name", "email", "create_date" FROM "res_partner" where "email" ilike $1 order by id offset $2 limit $3)
-	`
-	offset := page * r.Limit // limit the data based on length and limit to improve performance
-
-	searchQuery = fmt.Sprintf("%%%s%%", searchQuery)
-	var Data *sql.Rows
-	if r.IgnorePerformance {
-		Data, err = db.Query(query, searchQuery, 0, length)
-	} else {
-		Data, err = db.Query(query, searchQuery, offset, r.Limit)
-	}
 	var RP db_schema.ResPartner
 	var dataResult []db_schema.ResPartner
 
@@ -189,8 +183,13 @@ func (r *ResPartner) GetResPartnerBy(searchQuery string, page uint) (result *pro
 
 	defer Data.Close()
 
-	totalPage := uint(math.Floor(float64(length) / float64(r.Limit)))
-	if r.IgnorePerformance {
+	if len(dataResult) == 0 {
+		err = errors.New("404")
+		return nil, err
+	}
+
+	totalPage := uint(math.Floor(float64(length) / float64(limit)))
+	if ignorePerformance {
 		totalPage = 0
 		page = 0
 	}
@@ -214,33 +213,25 @@ func (r *ResPartner) CreateResPartner(request *db_schema.CreateResPartner) (err 
 
 	defer db.Close()
 
-	tx, err := db.Begin()
-	if err != nil {
-		log.Println("CreateUsers begin() error: ", err.Error())
-		return err
+	cdb := common.CommonDB{}
+
+	postData := &common.PostQueryParams{
+		Field: map[string]string{
+			"name":         request.Name.String,
+			"email":        request.Email.String,
+			"create_date":  "NOW()",
+			"display_name": request.Name.String,
+			"lang":         "en_US",
+			"tz":           "Asia/Tokyo",
+			"active":       "True",
+			"type":         "contact",
+			"is_company":   "False",
+			"write_date":   "NOW()",
+		},
+		EvaluateField: []string{"create_date", "active", "is_company", "write_date"},
 	}
 
-	// insert into database
-	query := `
-		INSERT INTO "res_partner" (
-			"name", "email", "create_date", "display_name",
-			"lang", "tz", "active", "type", "is_company", "write_date")
-		VALUES ($1, $2, NOW(), $1, 'en_US', 'Asia/Tokyo', True, 'contact', False, NOW())
-	`
-
-	_, err = tx.Exec(query, request.Name, request.Email)
-
-	if err != nil {
-		tx.Rollback()
-		log.Println("error insert: ", err.Error())
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		tx.Rollback()
-		log.Println("error commit: ", err.Error())
-	}
+	err = cdb.StandardPostQuery(db, TableName, postData)
 
 	return nil
 }
