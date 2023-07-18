@@ -9,6 +9,8 @@ import (
 	str "github.com/emnopal/go_postgres/utils/Checking"
 )
 
+// TODO: Bring back all of this to models for security reason
+
 type CommonDB struct{}
 
 func (c *CommonDB) GetTableLength(db *sql.DB, tableName string) (length uint, err error) {
