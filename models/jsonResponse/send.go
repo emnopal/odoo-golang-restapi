@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	r "github.com/emnopal/go_postgres/schemas/json/response"
+	r "github.com/emnopal/odoo-golang-restapi/schemas/json/response"
 	"github.com/gin-gonic/gin"
 )
 

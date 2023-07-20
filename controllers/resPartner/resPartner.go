@@ -8,9 +8,9 @@ import (
 	"net/url"
 	"strconv"
 
-	send "github.com/emnopal/go_postgres/models/jsonResponse"
-	resPartner "github.com/emnopal/go_postgres/models/resPartner"
-	resPartnerSchema "github.com/emnopal/go_postgres/schemas/db/resPartner"
+	send "github.com/emnopal/odoo-golang-restapi/models/jsonResponse"
+	resPartner "github.com/emnopal/odoo-golang-restapi/models/resPartner"
+	resPartnerSchema "github.com/emnopal/odoo-golang-restapi/schemas/db/resPartner"
 	"github.com/gin-gonic/gin"
 )
 

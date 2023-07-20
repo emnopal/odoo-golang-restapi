@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 
-	send "github.com/emnopal/go_postgres/models/jsonResponse"
+	send "github.com/emnopal/odoo-golang-restapi/models/jsonResponse"
 	"github.com/gin-gonic/gin"
 )
 

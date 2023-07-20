@@ -3,7 +3,7 @@ package config
 import (
 	"log"
 
-	env "github.com/emnopal/go_postgres/utils/env"
+	env "github.com/emnopal/odoo-golang-restapi/utils/env"
 	"github.com/gin-gonic/gin"
 )
 

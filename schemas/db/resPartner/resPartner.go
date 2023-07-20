@@ -1,7 +1,7 @@
 package schemas
 
 import (
-	nulls "github.com/emnopal/go_postgres/utils/NullHandler"
+	nulls "github.com/emnopal/odoo-golang-restapi/utils/NullHandler"
 )
 
 type ResPartner struct {

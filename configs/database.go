@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	env "github.com/emnopal/go_postgres/utils/env"
+	env "github.com/emnopal/odoo-golang-restapi/utils/env"
 	_ "github.com/lib/pq"
 )
 

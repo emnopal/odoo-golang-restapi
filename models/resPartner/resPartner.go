@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	config "github.com/emnopal/go_postgres/configs"
-	prop "github.com/emnopal/go_postgres/schemas/db/prop"
-	db_schema "github.com/emnopal/go_postgres/schemas/db/resPartner"
-	nulls "github.com/emnopal/go_postgres/utils/NullHandler"
+	config "github.com/emnopal/odoo-golang-restapi/configs"
+	prop "github.com/emnopal/odoo-golang-restapi/schemas/db/prop"
+	db_schema "github.com/emnopal/odoo-golang-restapi/schemas/db/resPartner"
+	nulls "github.com/emnopal/odoo-golang-restapi/utils/NullHandler"
 )
 
 type ResPartner struct{}

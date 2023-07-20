@@ -1,4 +1,4 @@
-module github.com/emnopal/go_postgres
+module github.com/emnopal/odoo-golang-restapi
 
 go 1.20
 

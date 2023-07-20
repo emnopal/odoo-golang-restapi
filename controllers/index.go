@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
-	send "github.com/emnopal/go_postgres/models/jsonResponse"
-	json_schema "github.com/emnopal/go_postgres/schemas/json"
+	send "github.com/emnopal/odoo-golang-restapi/models/jsonResponse"
+	json_schema "github.com/emnopal/odoo-golang-restapi/schemas/json"
 	"github.com/gin-gonic/gin"
 )
 

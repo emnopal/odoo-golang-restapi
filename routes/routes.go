@@ -1,9 +1,9 @@
 package routes
 
 import (
-	indexController "github.com/emnopal/go_postgres/controllers"
-	noRouteAndMethodController "github.com/emnopal/go_postgres/controllers/handlerNoRouteAndMethod"
-	resPartnerController "github.com/emnopal/go_postgres/controllers/resPartner"
+	indexController "github.com/emnopal/odoo-golang-restapi/controllers"
+	noRouteAndMethodController "github.com/emnopal/odoo-golang-restapi/controllers/handlerNoRouteAndMethod"
+	resPartnerController "github.com/emnopal/odoo-golang-restapi/controllers/resPartner"
 	"github.com/gin-gonic/gin"
 )
 

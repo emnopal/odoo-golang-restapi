@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	config "github.com/emnopal/go_postgres/configs"
-	"github.com/emnopal/go_postgres/routes"
+	config "github.com/emnopal/odoo-golang-restapi/configs"
+	"github.com/emnopal/odoo-golang-restapi/routes"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
 )
