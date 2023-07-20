@@ -6,13 +6,14 @@ import (
 	"log"
 	"net/http"
 
+	send "github.com/emnopal/go_postgres/models/jsonResponse"
 	json_schema "github.com/emnopal/go_postgres/schemas/json"
 	"github.com/gin-gonic/gin"
 )
 
 type IndexController struct{}
 
-func (attr *IndexController) Index(c *gin.Context) {
+func (attr *IndexController) Contoh(c *gin.Context) {
 
 	message := ""
 	status := http.StatusOK
@@ -48,4 +49,29 @@ func (attr *IndexController) Index(c *gin.Context) {
 	}
 
 	c.JSON(status, message)
+}
+
+func (attr *IndexController) Index(c *gin.Context) {
+
+	var t json_schema.ExampleJSON
+	var JSONBody string
+	err := json.NewDecoder(c.Request.Body).Decode(&t)
+	if err != nil {
+		log.Print("WARNING! JSON is empty")
+		JSONBody = "Empty"
+	} else {
+		JSONBody = t.JSONBody
+	}
+
+	jsonResult := map[string]string{
+		"message": "Hello",
+		"status":  fmt.Sprintf("%d", http.StatusOK),
+		"json":    JSONBody,
+		"params":  c.Request.URL.Query().Encode(),
+	}
+
+	j := &send.JsonSendGetHandler{GinContext: c}
+	j.CustomSuccessRespStatus = http.StatusOK
+	j.SendJsonGet(jsonResult, nil)
+
 }

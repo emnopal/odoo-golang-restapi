@@ -13,10 +13,17 @@ func Routes(r *gin.Engine) *gin.Engine {
 	r.GET("/", resPartner.GetResPartner)
 	r.POST("/", resPartner.CreateResPartner)
 	r.GET("/:id", resPartner.GetResPartnerById)
+	r.PATCH("/:id", resPartner.UpdateResPartner)
+	r.DELETE("/:id", resPartner.DeleteResPartner)
 
 	index := &indexController.IndexController{}
-	r.GET("/contoh", index.Index)
-	r.POST("/contoh", index.Index)
+	r.GET("/contoh", index.Contoh)
+	r.POST("/contoh", index.Contoh)
+	r.GET("/test", index.Index)
+	r.POST("/test", index.Index)
+	r.PUT("/test", index.Index)
+	r.PATCH("/test", index.Index)
+	r.DELETE("/test", index.Index)
 
 	handlerNoRoute := &noRouteAndMethodController.NoRouteController{}
 	r.NoRoute(handlerNoRoute.NoRouteHandler)

@@ -5,10 +5,11 @@ import (
 )
 
 type ResPartner struct {
-	ID         nulls.NullString `json:"id"`
+	ID         string           `json:"id"`
 	Name       nulls.NullString `json:"name"`
 	Email      nulls.NullString `json:"email"`
 	CreateDate nulls.NullTime   `json:"create_date"`
+	WriteDate  nulls.NullTime   `json:"write_date"`
 	// Active     string `json:"active"`
 	// Language   string `json:"language"`
 	// Timezone   string `json:"timezone"`
@@ -17,6 +18,11 @@ type ResPartner struct {
 }
 
 type CreateResPartner struct {
+	Name  nulls.NullString `json:"name"`
+	Email nulls.NullString `json:"email"`
+}
+
+type UpdateResPartner struct {
 	Name  nulls.NullString `json:"name"`
 	Email nulls.NullString `json:"email"`
 }
