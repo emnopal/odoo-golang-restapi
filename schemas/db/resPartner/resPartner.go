@@ -26,3 +26,12 @@ type UpdateResPartner struct {
 	Name  nulls.NullString `json:"name"`
 	Email nulls.NullString `json:"email"`
 }
+
+type ResPartnerQueryParams struct {
+	Page              uint
+	Limit             uint
+	Search            string
+	Sort              string
+	IgnorePerformance bool
+	MatchExactly      bool
+}

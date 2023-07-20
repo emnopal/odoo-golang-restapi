@@ -22,7 +22,7 @@ const (
 	DefaultMatchExcatly      = false
 )
 
-func (attr *ResPartnerController) GetResPartner(c *gin.Context) {
+func (attr *ResPartnerController) ResPartnerQueryParamsHandler(c *gin.Context) (params *resPartnerSchema.ResPartnerQueryParams) {
 	queryParams := c.Request.URL.Query()
 	pageParams := url.QueryEscape(queryParams.Get("page"))
 	limitParams := url.QueryEscape(queryParams.Get("limit"))
@@ -66,21 +66,31 @@ func (attr *ResPartnerController) GetResPartner(c *gin.Context) {
 		}
 	}
 
-	matchExcatly := DefaultMatchExcatly
+	matchExactly := DefaultMatchExcatly
 	if matchExactlyParams != "" {
 		var convErr error
-		matchExcatly, convErr = strconv.ParseBool(matchExactlyParams)
+		matchExactly, convErr = strconv.ParseBool(matchExactlyParams)
 		if convErr != nil {
 			log.Println("strconv error occured: ", convErr.Error())
-			matchExcatly = DefaultMatchExcatly
+			matchExactly = DefaultMatchExcatly
 		}
 	}
 
+	return &resPartnerSchema.ResPartnerQueryParams{
+		Page:              uint(page),
+		Limit:             uint(limit),
+		Search:            searchParams,
+		Sort:              sort,
+		IgnorePerformance: ignorePerformance,
+		MatchExactly:      matchExactly,
+	}
+}
+
+func (attr *ResPartnerController) GetResPartner(c *gin.Context) {
+	params := attr.ResPartnerQueryParamsHandler(c)
 	RP := &resPartner.ResPartner{}
-	if searchParams != "" {
-		searchQuery := searchParams
-		currentPage := uint(page)
-		result, err := RP.GetResPartnerBy(searchQuery, currentPage, uint(limit), sort, ignorePerformance, matchExcatly)
+	if params.Search != "" {
+		result, err := RP.GetResPartnerBy(params)
 		j := &send.JsonSendGetHandler{GinContext: c}
 		if err != nil {
 			if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
@@ -91,19 +101,14 @@ func (attr *ResPartnerController) GetResPartner(c *gin.Context) {
 		j.SendJsonGet(result, err)
 		return
 	}
-
-	currentPage := uint(page)
-	result, err := RP.GetResPartner(currentPage, uint(limit), sort, ignorePerformance)
-
+	result, err := RP.GetResPartner(params)
 	j := &send.JsonSendGetHandler{GinContext: c}
-
 	if err != nil {
 		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
 			err = errors.New("null result")
 			j.CustomErrorRespStatus = http.StatusNotFound
 		}
 	}
-
 	j.SendJsonGet(result, err)
 }
 
@@ -125,7 +130,6 @@ func (attr *ResPartnerController) CreateResPartner(c *gin.Context) {
 	j := &send.JsonSendGetHandler{GinContext: c}
 	RP := &resPartner.ResPartner{}
 	var request resPartnerSchema.CreateResPartner
-
 	if err := c.ShouldBindJSON(&request); err != nil {
 		if err.Error() == "EOF" {
 			j.CustomErrorLogMsg = "JSON is null"
@@ -135,17 +139,14 @@ func (attr *ResPartnerController) CreateResPartner(c *gin.Context) {
 		j.SendJsonGet(nil, err)
 		return
 	}
-
 	result, err := RP.CreateResPartner(&request)
 	if err != nil {
 		j.SendJsonGet(nil, err)
 		return
 	}
-
 	j.CustomSuccessLogMsg = fmt.Sprintf("Success send data to: %s", j.GinContext.Request.URL.RequestURI())
 	j.CustomSuccessRespMsg = j.CustomSuccessLogMsg
 	j.CustomSuccessRespStatus = http.StatusCreated
-
 	j.SendJsonGet(result, nil)
 }
 
@@ -154,7 +155,6 @@ func (attr *ResPartnerController) UpdateResPartner(c *gin.Context) {
 	j := &send.JsonSendGetHandler{GinContext: c}
 	RP := &resPartner.ResPartner{}
 	var request resPartnerSchema.UpdateResPartner
-
 	if err := c.ShouldBindJSON(&request); err != nil {
 		if err.Error() == "EOF" {
 			j.CustomErrorLogMsg = "JSON is null"
@@ -164,7 +164,6 @@ func (attr *ResPartnerController) UpdateResPartner(c *gin.Context) {
 		j.SendJsonGet(nil, err)
 		return
 	}
-
 	result, err := RP.UpdateResPartner(id, &request)
 	if err != nil {
 		if err.Error() == "404" {
@@ -175,11 +174,9 @@ func (attr *ResPartnerController) UpdateResPartner(c *gin.Context) {
 		j.SendJsonGet(nil, err)
 		return
 	}
-
 	j.CustomSuccessLogMsg = fmt.Sprintf("Success update data to: %s with ID: %d", j.GinContext.Request.URL.RequestURI(), result.ID)
 	j.CustomSuccessRespMsg = j.CustomSuccessLogMsg
 	j.CustomSuccessRespStatus = http.StatusOK
-
 	j.SendJsonGet(result, nil)
 }
 
@@ -187,7 +184,6 @@ func (attr *ResPartnerController) DeleteResPartner(c *gin.Context) {
 	id := c.Param("id")
 	j := &send.JsonSendGetHandler{GinContext: c}
 	RP := &resPartner.ResPartner{}
-
 	result, err := RP.DeleteResPartner(id)
 	if err != nil {
 		if err.Error() == "404" {
@@ -198,10 +194,8 @@ func (attr *ResPartnerController) DeleteResPartner(c *gin.Context) {
 		j.SendJsonGet(nil, err)
 		return
 	}
-
 	j.CustomSuccessLogMsg = fmt.Sprintf("Success delete data: %s with ID: %s", j.GinContext.Request.URL.RequestURI(), id)
 	j.CustomSuccessRespMsg = j.CustomSuccessLogMsg
 	j.CustomSuccessRespStatus = http.StatusOK
-
 	j.SendJsonGet(result, nil)
 }

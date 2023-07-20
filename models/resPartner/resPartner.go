@@ -23,7 +23,7 @@ const (
 	DefaultCols = `"id", "name", "email", "create_date", "write_date"`
 )
 
-func (r *ResPartner) GetResPartner(page uint, limit uint, sort string, ignorePerformance bool) (result *prop.GetDataProp, err error) {
+func (r *ResPartner) GetResPartner(params *db_schema.ResPartnerQueryParams) (result *prop.GetDataProp, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
@@ -31,11 +31,15 @@ func (r *ResPartner) GetResPartner(page uint, limit uint, sort string, ignorePer
 	}
 	defer db.Close()
 
+	page := params.Page
+	limit := params.Limit
+	sort := params.Sort
+	ignorePerformance := params.IgnorePerformance
+
 	// get length of data
 	var length uint
-	getLengthDataQuery := `SELECT reltuples::bigint AS estimate FROM pg_class WHERE oid = $1::regclass;`
-	tableNameScheme := `public.` + TableName
-	err = db.QueryRow(getLengthDataQuery, tableNameScheme).Scan(&length)
+	getLengthDataQuery := `SELECT COUNT(1) FROM res_partner`
+	err = db.QueryRow(getLengthDataQuery).Scan(&length)
 	if err != nil {
 		log.Println("Query error occured: ", err.Error())
 		return nil, err
@@ -139,13 +143,20 @@ func (r *ResPartner) GetResPartnerById(id string) (result *prop.GetDataProp, err
 	return
 }
 
-func (r *ResPartner) GetResPartnerBy(searchQuery string, page uint, limit uint, sort string, ignorePerformance bool, matchExactly bool) (result *prop.GetDataProp, err error) {
+func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (result *prop.GetDataProp, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
 		log.Fatalf("Some error occured. Err: %s", err)
 	}
 	defer db.Close()
+
+	matchExactly := params.MatchExactly
+	searchQuery := params.Search
+	sort := params.Sort
+	page := params.Page
+	limit := params.Limit
+	ignorePerformance := params.IgnorePerformance
 
 	// set kind of join query
 	joinQuery := " UNION "
@@ -406,8 +417,6 @@ func (r *ResPartner) DeleteResPartner(id string) (result *prop.DeleteDataProp, e
 
 	// update into database
 	_, err = tx.Exec(query, id)
-
-	// log.Println(results)
 
 	// exec, then rollback if error
 	if err != nil {
