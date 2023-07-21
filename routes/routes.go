@@ -9,21 +9,25 @@ import (
 
 func Routes(r *gin.Engine) *gin.Engine {
 
+	public := r.Group("api/v1")
+	// protected := r.Group("api/v1")
+	private := r.Group("api/v1")
+
 	resPartner := &resPartnerController.ResPartnerController{}
-	r.GET("/", resPartner.GetResPartner)
-	r.POST("/", resPartner.CreateResPartner)
-	r.GET("/:id", resPartner.GetResPartnerById)
-	r.PATCH("/:id", resPartner.UpdateResPartner)
-	r.DELETE("/:id", resPartner.DeleteResPartner)
+	private.GET("/", resPartner.GetResPartner)
+	private.POST("/", resPartner.CreateResPartner)
+	private.GET("/:id", resPartner.GetResPartnerById)
+	private.PATCH("/:id", resPartner.UpdateResPartner)
+	private.DELETE("/:id", resPartner.DeleteResPartner)
 
 	index := &indexController.IndexController{}
-	r.GET("/contoh", index.Contoh)
-	r.POST("/contoh", index.Contoh)
-	r.GET("/test", index.Index)
-	r.POST("/test", index.Index)
-	r.PUT("/test", index.Index)
-	r.PATCH("/test", index.Index)
-	r.DELETE("/test", index.Index)
+	public.GET("/contoh", index.Contoh)
+	public.POST("/contoh", index.Contoh)
+	public.GET("/test", index.Index)
+	public.POST("/test", index.Index)
+	public.PUT("/test", index.Index)
+	public.PATCH("/test", index.Index)
+	public.DELETE("/test", index.Index)
 
 	handlerNoRoute := &noRouteAndMethodController.NoRouteController{}
 	r.NoRoute(handlerNoRoute.NoRouteHandler)
