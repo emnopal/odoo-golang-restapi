@@ -11,8 +11,8 @@ import (
 	"strings"
 
 	config "github.com/emnopal/odoo-golang-restapi/configs"
-	prop "github.com/emnopal/odoo-golang-restapi/schemas/db/prop"
 	db_schema "github.com/emnopal/odoo-golang-restapi/schemas/db/resPartner"
+	res "github.com/emnopal/odoo-golang-restapi/schemas/db/result"
 	nulls "github.com/emnopal/odoo-golang-restapi/utils/NullHandler"
 )
 
@@ -23,7 +23,7 @@ const (
 	DefaultCols = `"id", "name", "email", "create_date", "write_date"`
 )
 
-func (r *ResPartner) GetResPartner(params *db_schema.ResPartnerQueryParams) (result *prop.GetDataProp, err error) {
+func (r *ResPartner) GetResPartner(params *db_schema.ResPartnerQueryParams) (result *res.ResultGetData, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
@@ -100,7 +100,7 @@ func (r *ResPartner) GetResPartner(params *db_schema.ResPartnerQueryParams) (res
 		totalPage = 0
 		page = 0
 	}
-	result = &prop.GetDataProp{
+	result = &res.ResultGetData{
 		Length:      length,
 		TotalPage:   totalPage,
 		CurrentPage: page,
@@ -110,7 +110,7 @@ func (r *ResPartner) GetResPartner(params *db_schema.ResPartnerQueryParams) (res
 }
 
 // get by id must be singleton
-func (r *ResPartner) GetResPartnerById(id string) (result *prop.GetDataProp, err error) {
+func (r *ResPartner) GetResPartnerById(id string) (result *res.ResultGetData, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
@@ -134,7 +134,7 @@ func (r *ResPartner) GetResPartnerById(id string) (result *prop.GetDataProp, err
 	}
 
 	// returning the result
-	result = &prop.GetDataProp{
+	result = &res.ResultGetData{
 		Length:      1,
 		TotalPage:   0,
 		CurrentPage: 0,
@@ -143,7 +143,7 @@ func (r *ResPartner) GetResPartnerById(id string) (result *prop.GetDataProp, err
 	return
 }
 
-func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (result *prop.GetDataProp, err error) {
+func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (result *res.ResultGetData, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
@@ -248,7 +248,7 @@ func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (r
 		totalPage = 0
 		page = 0
 	}
-	result = &prop.GetDataProp{
+	result = &res.ResultGetData{
 		Length:      length,
 		TotalPage:   totalPage,
 		CurrentPage: page,
@@ -257,7 +257,7 @@ func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (r
 	return
 }
 
-func (r *ResPartner) CreateResPartner(request *db_schema.CreateResPartner) (result *prop.CreateDataProp, err error) {
+func (r *ResPartner) CreateResPartner(request *db_schema.CreateResPartner) (result *res.ResultCreateData, err error) {
 	db, err := config.DBConfig()
 	if err != nil {
 		log.Fatalf("Some error occured. Err: %s", err)
@@ -306,7 +306,7 @@ func (r *ResPartner) CreateResPartner(request *db_schema.CreateResPartner) (resu
 		log.Println("error commit: ", err.Error())
 	}
 
-	result = &prop.CreateDataProp{
+	result = &res.ResultCreateData{
 		LastInsertId: uint(lastInsertId),
 		CreateDate:   createDate,
 		Request:      request,
@@ -315,7 +315,7 @@ func (r *ResPartner) CreateResPartner(request *db_schema.CreateResPartner) (resu
 	return result, nil
 }
 
-func (r *ResPartner) UpdateResPartner(id string, request *db_schema.UpdateResPartner) (result *prop.UpdateDataProp, err error) {
+func (r *ResPartner) UpdateResPartner(id string, request *db_schema.UpdateResPartner) (result *res.ResultUpdateData, err error) {
 	db, err := config.DBConfig()
 	if err != nil {
 		log.Fatalf("Some error occured. Err: %s", err)
@@ -381,7 +381,7 @@ func (r *ResPartner) UpdateResPartner(id string, request *db_schema.UpdateResPar
 		id_int = 0
 	}
 
-	result = &prop.UpdateDataProp{
+	result = &res.ResultUpdateData{
 		ID:        uint(id_int),
 		WriteDate: writeDate,
 		Request:   request,
@@ -390,7 +390,7 @@ func (r *ResPartner) UpdateResPartner(id string, request *db_schema.UpdateResPar
 	return result, nil
 }
 
-func (r *ResPartner) DeleteResPartner(id string) (result *prop.DeleteDataProp, err error) {
+func (r *ResPartner) DeleteResPartner(id string) (result *res.ResultDeleteData, err error) {
 	db, err := config.DBConfig()
 	if err != nil {
 		log.Fatalf("Some error occured. Err: %s", err)
@@ -438,7 +438,7 @@ func (r *ResPartner) DeleteResPartner(id string) (result *prop.DeleteDataProp, e
 		id_int = 0
 	}
 
-	result = &prop.DeleteDataProp{
+	result = &res.ResultDeleteData{
 		ID: uint(id_int),
 	}
 
