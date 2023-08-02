@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "go-launch",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "${workspaceFolder}/cmd/main/",
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "go-nodemon",
+            "type": "node",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "restart": true,
+            "runtimeExecutable": "${workspaceFolder}/node_modules/nodemon/bin/nodemon.js",
+            "runtimeArgs": [
+                "--watch", "${workspaceFolder}/**/*.go",
+                "--signal", "SIGTERM",
+                "--exec", "go run ${workspaceFolder}/cmd/main/main.go"
+            ]
+        }
+    ]
+}
