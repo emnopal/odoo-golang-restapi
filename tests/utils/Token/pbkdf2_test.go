@@ -31,9 +31,22 @@ func TestPbkdf2DecoderValid(t *testing.T) {
 	t.Log(isValid)
 }
 
-func TestPbkdf2DecoderInvalid(t *testing.T) {
+func TestPbkdf2DecoderInvalidHash(t *testing.T) {
 	password := "admin123"
 	hash := "$pbkdf2-sha512$25000$xZgT4jxnTGlNKSVESEnpxQ$3Y18V7rxYPfRzl6EnTJba1ITGGMKdjqH.xl.WpTj4KGqCR3g/NRPyWqnB1sd6UdYdnTOPuxZ3t5Ilwi7FNodVg"
+	isValid, err := Token.Pbkdf2Decoder(password, hash)
+	if err == nil {
+		t.Errorf(`hash expected error since it's invalid with %s, found not error`, password)
+	}
+	if isValid {
+		t.Errorf(`hash expected invalid with %s, found true`, password)
+	}
+	t.Log(isValid)
+}
+
+func TestPbkdf2DecoderInvalidPassword(t *testing.T) {
+	password := "admin124"
+	hash := "$pbkdf2-sha512$25000$xZgT4jxnTGlNKSVESEnpXQ$3Y18V7rxYPfRzl6EnTJba1ITGGMKdjqH.xl.WpTj4KGqCR3g/NRPyWqnB1sd6UdYdnTOPuxZ3t5Ilwi7FNodVg"
 	isValid, err := Token.Pbkdf2Decoder(password, hash)
 	if err == nil {
 		t.Errorf(`hash expected error since it's invalid with %s, found not error`, password)
