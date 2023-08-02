@@ -1,0 +1,22 @@
+{
+  "name": "odoo-golang-restapi",
+  "version": "1.0.0",
+  "description": "Alpha stages of Odoo 14 database REST API in Golang",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emnopal/odoo-golang-restapi.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/emnopal/odoo-golang-restapi/issues"
+  },
+  "homepage": "https://github.com/emnopal/odoo-golang-restapi#readme",
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}
