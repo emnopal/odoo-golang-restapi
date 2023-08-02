@@ -3,11 +3,12 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	auth "github.com/emnopal/odoo-golang-restapi/app/models/auth"
-	// authConfig "github.com/emnopal/odoo-golang-restapi/app/utils/Token"
 	send "github.com/emnopal/odoo-golang-restapi/app/models/jsonResponse"
 	authSchema "github.com/emnopal/odoo-golang-restapi/app/schemas/db/auth"
+	authConfig "github.com/emnopal/odoo-golang-restapi/app/utils/Token"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,4 +37,47 @@ func (attr *AuthController) Login(c *gin.Context) {
 	j.CustomSuccessRespMsg = j.CustomSuccessLogMsg
 	j.CustomSuccessRespStatus = http.StatusOK
 	j.SendJsonGet(result, nil)
+}
+
+func (attr *AuthController) Profile(c *gin.Context) {
+	j := &send.JsonSendGetHandler{GinContext: c}
+	id, err := authConfig.ExtractIDFromGin(c)
+	if err != nil {
+		j.SendJsonGet(nil, err)
+		return
+	}
+
+	authLogin := &auth.Auth{}
+	result, err := authLogin.GetUserById(id)
+	if err != nil {
+		j.SendJsonGet(nil, err)
+		return
+	}
+
+	j.SendJsonGet(result, nil)
+}
+
+func (attr *AuthController) ProfileBy(c *gin.Context) {
+	j := &send.JsonSendGetHandler{GinContext: c}
+	param := c.Param("param")
+
+	authLogin := &auth.Auth{}
+
+	_, err := strconv.Atoi(param)
+	if err != nil {
+		result, err := authLogin.GetUserByUsername(param)
+		if err != nil {
+			j.SendJsonGet(nil, err)
+			return
+		}
+		j.SendJsonGet(result, nil)
+	} else {
+		result, err := authLogin.GetUserById(param)
+		if err != nil {
+			j.SendJsonGet(nil, err)
+			return
+		}
+		j.SendJsonGet(result, nil)
+	}
+
 }

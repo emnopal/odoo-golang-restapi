@@ -17,11 +17,11 @@ func Routes(r *gin.Engine) *gin.Engine {
 	private.Use(middleware.JwtAuthMiddleware())
 
 	resPartner := &resPartnerController.ResPartnerController{}
-	private.GET("/", resPartner.GetResPartner)
-	private.POST("/", resPartner.CreateResPartner)
-	private.GET("/:id", resPartner.GetResPartnerById)
-	private.PATCH("/:id", resPartner.UpdateResPartner)
-	private.DELETE("/:id", resPartner.DeleteResPartner)
+	private.GET("/contact", resPartner.GetResPartner)
+	private.POST("/contact", resPartner.CreateResPartner)
+	private.GET("/contact/:id", resPartner.GetResPartnerById)
+	private.PATCH("/contact/:id", resPartner.UpdateResPartner)
+	private.DELETE("/contact/:id", resPartner.DeleteResPartner)
 
 	index := &indexController.IndexController{}
 	public.GET("/contoh", index.Contoh)
@@ -34,6 +34,10 @@ func Routes(r *gin.Engine) *gin.Engine {
 
 	auth := &authController.AuthController{}
 	public.POST("/login", auth.Login)
+	public.GET("/user", auth.Profile)
+	public.GET("/user/:param", auth.ProfileBy)
+	public.GET("/me", auth.Profile)
+	public.GET("/profile", auth.Profile)
 
 	handlerNoRoute := &noRouteAndMethodController.NoRouteController{}
 	r.NoRoute(handlerNoRoute.NoRouteHandler)
