@@ -11,7 +11,7 @@ import (
 
 func JwtAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := jwt.Validate(c)
+		err := jwt.ValidateFromGin(c)
 		if err != nil {
 			unauthorizedMsg := "Unauthorized"
 			err := errors.New(unauthorizedMsg)
