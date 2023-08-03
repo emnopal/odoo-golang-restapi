@@ -28,3 +28,12 @@ type User struct {
 	Created  nulls.NullTime   `json:"created"`
 	Updated  nulls.NullTime   `json:"updated"`
 }
+
+type UserQueryParams struct {
+	Page              uint
+	Limit             uint
+	Search            string
+	Sort              string
+	IgnorePerformance bool
+	MatchExactly      bool
+}
