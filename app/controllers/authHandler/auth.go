@@ -170,3 +170,20 @@ func (attr *AuthController) ProfileBy(c *gin.Context) {
 	}
 
 }
+
+// i think we should handle logout also in server-side
+func (attr *AuthController) Logout(c *gin.Context) {
+	j := &send.JsonSendGetHandler{GinContext: c}
+
+	username, err := authConfig.ExtractUserNameFromGin(c)
+	if err != nil {
+		j.SendJsonGet(nil, err)
+		return
+	}
+
+	j.CustomSuccessLogMsg = fmt.Sprintf("User: %s logged out", username)
+	j.CustomSuccessRespData = nil
+	j.CustomSuccessRespMsg = fmt.Sprintf("User: %s logged out", username)
+	c.Header("Authorization", "")
+	j.SendJsonGet(nil, err)
+}

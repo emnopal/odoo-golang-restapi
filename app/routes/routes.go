@@ -34,10 +34,11 @@ func Routes(r *gin.Engine) *gin.Engine {
 
 	auth := &authController.AuthController{}
 	public.POST("/login", auth.Login)
-	public.GET("/user", auth.Profile)
-	public.GET("/user/:param", auth.ProfileBy)
-	public.GET("/me", auth.Profile)
-	public.GET("/profile", auth.Profile)
+	private.GET("/user", auth.Profile)
+	private.GET("/user/:param", auth.ProfileBy)
+	private.GET("/me", auth.Profile)
+	private.GET("/profile", auth.Profile)
+	private.GET("/logout", auth.Logout)
 
 	handlerNoRoute := &noRouteAndMethodController.NoRouteController{}
 	r.NoRoute(handlerNoRoute.NoRouteHandler)
