@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -152,7 +153,11 @@ func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (r
 	defer db.Close()
 
 	matchExactly := params.MatchExactly
-	searchQuery := params.Search
+	decodedSearchQuery, err := url.QueryUnescape(params.Search)
+	if err != nil {
+		log.Println("Query unescape error occured: ", err.Error())
+		return nil, err
+	}
 	sort := params.Sort
 	page := params.Page
 	limit := params.Limit
@@ -176,7 +181,7 @@ func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (r
 	finalLengthQuery := fmt.Sprintf(`SELECT COUNT(JOIN_COUNT.id) FROM (%s) JOIN_COUNT`, lengthQuery)
 
 	var length uint
-	err = db.QueryRow(finalLengthQuery, searchQuery).Scan(&length)
+	err = db.QueryRow(finalLengthQuery, decodedSearchQuery).Scan(&length)
 	if err != nil {
 		log.Println("Query error occured: ", err.Error())
 		return nil, err
@@ -212,9 +217,9 @@ func (r *ResPartner) GetResPartnerBy(params *db_schema.ResPartnerQueryParams) (r
 	finalQuery := strings.Join(appendQuery, joinQuery)
 	var Data *sql.Rows
 	if ignorePerformance {
-		Data, err = db.Query(finalQuery, searchQuery)
+		Data, err = db.Query(finalQuery, decodedSearchQuery)
 	} else {
-		Data, err = db.Query(finalQuery, searchQuery, offset, limit)
+		Data, err = db.Query(finalQuery, decodedSearchQuery, offset, limit)
 	}
 
 	// raise error when Data is not available
