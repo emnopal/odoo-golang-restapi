@@ -7,10 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	jwt_schema "github.com/emnopal/odoo-golang-restapi/app/schemas/auth"
 	utils "github.com/emnopal/odoo-golang-restapi/app/utils/env"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt"
 )
 
 const (
