@@ -10,37 +10,49 @@ type HelpdeskStage struct {
 	Sequence string `json:"sequence"`
 }
 
+type Company struct {
+	ID   nulls.NullString `json:"id"`
+	Name nulls.NullString `json:"name"`
+}
+
+type Customer struct {
+	ID   nulls.NullString `json:"id"`
+	Name nulls.NullString `json:"name"`
+}
+
+type AssignedUser struct {
+	ID   nulls.NullString `json:"id"`
+	Name nulls.NullString `json:"name"`
+}
+
+type Stage struct {
+	ID   nulls.NullString `json:"id"`
+	Name nulls.NullString `json:"name"`
+}
+
 type HelpdeskTicketListView struct {
-	ID             string           `json:"id"`
-	CompanyID      nulls.NullString `json:"company_id"`
-	CompanyName    nulls.NullString `json:"company_name"`
-	CustomerID     nulls.NullString `json:"customer_id"`
-	CustomerName   nulls.NullString `json:"customer_name"`
-	TicketNumber   nulls.NullString `json:"ticket_number"`
-	TicketIssue    nulls.NullString `json:"ticket_issue"`
-	ReportedOn     nulls.NullTime   `json:"reported_on"`
-	AssignedToID   nulls.NullString `json:"assigned_to_id"`
-	AssignedToName nulls.NullString `json:"assigned_to_name"`
-	StageID        nulls.NullString `json:"stage_id"`
-	StageName      nulls.NullString `json:"stage_name"`
-	CreateDate     nulls.NullTime   `json:"create_date"`
+	ID           string           `json:"id"`
+	TicketNumber nulls.NullString `json:"ticket_number"`
+	TicketIssue  nulls.NullString `json:"ticket_issue"`
+	ReportedOn   nulls.NullTime   `json:"reported_on"`
+	Company      Company          `json:"company"`
+	Customer     Customer         `json:"customer"`
+	AssignedUser AssignedUser     `json:"assigned_user"`
+	Stage        Stage            `json:"stage"`
+	CreateDate   nulls.NullTime   `json:"create_date"`
 }
 
 type HelpdeskTicketFormView struct {
-	ID             string           `json:"id"`
-	CompanyID      nulls.NullString `json:"company_id"`
-	CompanyName    nulls.NullString `json:"company_name"`
-	CustomerID     nulls.NullString `json:"customer_id"`
-	CustomerName   nulls.NullString `json:"customer_name"`
-	TicketNumber   nulls.NullString `json:"ticket_number"`
-	TicketIssue    nulls.NullString `json:"ticket_issue"`
-	ReportedOn     nulls.NullTime   `json:"reported_on"`
-	AssignedToID   nulls.NullString `json:"assigned_to_id"`
-	AssignedToName nulls.NullString `json:"assigned_to_name"`
-	StageID        nulls.NullString `json:"stage_id"`
-	StageName      nulls.NullString `json:"stage_name"`
-	Description    nulls.NullString `json:"description"`
-	CreateDate     nulls.NullTime   `json:"create_date"`
+	ID                string           `json:"id"`
+	TicketNumber      nulls.NullString `json:"ticket_number"`
+	TicketIssue       nulls.NullString `json:"ticket_issue"`
+	TicketDescription nulls.NullString `json:"ticket_description"`
+	ReportedOn        nulls.NullTime   `json:"reported_on"`
+	Company           Company          `json:"company"`
+	Customer          Customer         `json:"customer"`
+	AssignedUser      AssignedUser     `json:"assigned_user"`
+	Stage             Stage            `json:"stage"`
+	CreateDate        nulls.NullTime   `json:"create_date"`
 }
 
 type HelpdeskTicketMessage struct {
