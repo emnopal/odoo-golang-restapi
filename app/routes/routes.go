@@ -4,6 +4,7 @@ import (
 	indexController "github.com/emnopal/odoo-golang-restapi/app/controllers"
 	authController "github.com/emnopal/odoo-golang-restapi/app/controllers/authHandler"
 	noRouteAndMethodController "github.com/emnopal/odoo-golang-restapi/app/controllers/handlerNoRouteAndMethod"
+	helpdeskTicketController "github.com/emnopal/odoo-golang-restapi/app/controllers/helpdesk"
 	resPartnerController "github.com/emnopal/odoo-golang-restapi/app/controllers/resPartner"
 	"github.com/emnopal/odoo-golang-restapi/app/middleware"
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,12 @@ func Routes(r *gin.Engine) *gin.Engine {
 	private.GET("/contact/:id", resPartner.GetResPartnerById)
 	private.PATCH("/contact/:id", resPartner.UpdateResPartner)
 	private.DELETE("/contact/:id", resPartner.DeleteResPartner)
+
+	helpdeskTicket := &helpdeskTicketController.HelpdeskController{}
+	private.GET("/helpdesk", helpdeskTicket.GetHelpdeskTicket)
+	private.GET("/helpdesk/:id", helpdeskTicket.GetHelpdeskTicketById)
+	private.GET("/helpdesk/stage", helpdeskTicket.GetHelpdeskTicketStage)
+	private.GET("/helpdesk/stage/:id", helpdeskTicket.GetHelpdeskTicketStageById)
 
 	index := &indexController.IndexController{}
 	public.GET("/contoh", index.Contoh)
