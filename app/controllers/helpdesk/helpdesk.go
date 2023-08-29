@@ -91,19 +91,20 @@ func (attr *HelpdeskController) HelpdeskTicketQueryParamsHandler(c *gin.Context)
 func (attr *HelpdeskController) GetHelpdeskTicket(c *gin.Context) {
 	params := attr.HelpdeskTicketQueryParamsHandler(c)
 	Helpdesk := &helpdesk.Helpdesk{}
-	// not implemented yet
-	// if params.Search != "" {
-	// 	result, err := RP.GetResPartnerBy(params)
-	// 	j := &send.JsonSendGetHandler{GinContext: c}
-	// 	if err != nil {
-	// 		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
-	// 			err = errors.New("null result")
-	// 			j.CustomErrorRespStatus = http.StatusNotFound
-	// 		}
-	// 	}
-	// 	j.SendJsonGet(result, err)
-	// 	return
-	// }
+
+	if params.Search != "" {
+		result, err := Helpdesk.GetHelpdeskBy(params)
+		j := &send.JsonSendGetHandler{GinContext: c}
+		if err != nil {
+			if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+				err = errors.New("null result")
+				j.CustomErrorRespStatus = http.StatusNotFound
+			}
+		}
+		j.SendJsonGet(result, err)
+		return
+	}
+
 	result, err := Helpdesk.GetHelpdeskTicket(params)
 	j := &send.JsonSendGetHandler{GinContext: c}
 	if err != nil {
@@ -133,19 +134,19 @@ func (attr *HelpdeskController) GetHelpdeskTicketStage(c *gin.Context) {
 	params := attr.HelpdeskTicketQueryParamsHandler(c)
 	params.Sort = "sequence"
 	Helpdesk := &helpdesk.Helpdesk{}
-	// not implemented yet
-	// if params.Search != "" {
-	// 	result, err := RP.GetResPartnerBy(params)
-	// 	j := &send.JsonSendGetHandler{GinContext: c}
-	// 	if err != nil {
-	// 		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
-	// 			err = errors.New("null result")
-	// 			j.CustomErrorRespStatus = http.StatusNotFound
-	// 		}
-	// 	}
-	// 	j.SendJsonGet(result, err)
-	// 	return
-	// }
+
+	if params.Search != "" {
+		result, err := Helpdesk.GetHelpdeskTicketStageBy(params)
+		j := &send.JsonSendGetHandler{GinContext: c}
+		if err != nil {
+			if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+				err = errors.New("null result")
+				j.CustomErrorRespStatus = http.StatusNotFound
+			}
+		}
+		j.SendJsonGet(result, err)
+		return
+	}
 	result, err := Helpdesk.GetHelpdeskTicketStage(params)
 	j := &send.JsonSendGetHandler{GinContext: c}
 	if err != nil {
