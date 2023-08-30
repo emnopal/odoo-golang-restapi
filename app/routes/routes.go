@@ -13,22 +13,14 @@ import (
 func Routes(r *gin.Engine) *gin.Engine {
 
 	public := r.Group("api/v1")
-	// protected := r.Group("api/v1")
 	private := r.Group("api/v1")
 	private.Use(middleware.JwtAuthMiddleware())
 
-	resPartner := &resPartnerController.ResPartnerController{}
-	private.GET("/contact", resPartner.GetResPartner)
-	private.POST("/contact", resPartner.CreateResPartner)
-	private.GET("/contact/:id", resPartner.GetResPartnerById)
-	private.PATCH("/contact/:id", resPartner.UpdateResPartner)
-	private.DELETE("/contact/:id", resPartner.DeleteResPartner)
+	handlerNoRoute := &noRouteAndMethodController.NoRouteController{}
+	r.NoRoute(handlerNoRoute.NoRouteHandler)
 
-	helpdeskTicket := &helpdeskTicketController.HelpdeskController{}
-	private.GET("/helpdesk", helpdeskTicket.GetHelpdeskTicket)
-	private.GET("/helpdesk/:id", helpdeskTicket.GetHelpdeskTicketById)
-	private.GET("/helpdesk/stage", helpdeskTicket.GetHelpdeskTicketStage)
-	private.GET("/helpdesk/stage/:id", helpdeskTicket.GetHelpdeskTicketStageById)
+	handlerNoMethod := &noRouteAndMethodController.NoMethodController{}
+	r.NoMethod(handlerNoMethod.NoMethodHandler)
 
 	index := &indexController.IndexController{}
 	public.GET("/contoh", index.Contoh)
@@ -47,11 +39,20 @@ func Routes(r *gin.Engine) *gin.Engine {
 	private.GET("/profile", auth.Profile)
 	private.GET("/logout", auth.Logout)
 
-	handlerNoRoute := &noRouteAndMethodController.NoRouteController{}
-	r.NoRoute(handlerNoRoute.NoRouteHandler)
+	resPartner := &resPartnerController.ResPartnerController{}
+	private.GET("/contact", resPartner.GetResPartner)
+	private.POST("/contact", resPartner.CreateResPartner)
+	private.GET("/contact/:id", resPartner.GetResPartnerById)
+	private.PATCH("/contact/:id", resPartner.UpdateResPartner)
+	private.DELETE("/contact/:id", resPartner.DeleteResPartner)
 
-	handlerNoMethod := &noRouteAndMethodController.NoMethodController{}
-	r.NoMethod(handlerNoMethod.NoMethodHandler)
+	helpdeskTicket := &helpdeskTicketController.HelpdeskController{}
+	private.GET("/helpdesk/ticket", helpdeskTicket.GetHelpdeskTicket)
+	private.GET("/helpdesk/ticket/:id", helpdeskTicket.GetHelpdeskTicketById)
+	private.GET("/helpdesk/stage", helpdeskTicket.GetHelpdeskTicketStage)
+	private.GET("/helpdesk/stage/:id", helpdeskTicket.GetHelpdeskTicketStageById)
+	private.GET("/helpdesk/message/:ticket_id", helpdeskTicket.GetHelpdeskTicketMessage)
+	private.GET("/helpdesk/message/:ticket_id/:message_id", helpdeskTicket.GetHelpdeskTicketMessageById)
 
 	return r
 }

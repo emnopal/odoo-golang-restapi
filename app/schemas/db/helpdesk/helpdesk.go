@@ -30,6 +30,22 @@ type Stage struct {
 	Name nulls.NullString `json:"name"`
 }
 
+type Message struct {
+	MessageID        string           `json:"message_id"`
+	MessageAuthor    nulls.NullString `json:"message_author"`
+	MessageBody      nulls.NullString `json:"message_body"`
+	MessagePublished nulls.NullTime   `json:"message_published"`
+}
+
+type Attachment struct {
+	AttachmentID          nulls.NullString `json:"attachment_id"`
+	AttachmentName        nulls.NullString `json:"attachment_name"`
+	AttachmentType        nulls.NullString `json:"attachment_type"`
+	AttachmentMimeType    nulls.NullString `json:"attachment_mimetype"`
+	AttachmentDescription nulls.NullString `json:"attachment_description"`
+	AttachmentURL         nulls.NullString `json:"attachment_url"`
+}
+
 type HelpdeskTicketListView struct {
 	ID           string           `json:"id"`
 	TicketNumber nulls.NullString `json:"ticket_number"`
@@ -39,7 +55,6 @@ type HelpdeskTicketListView struct {
 	Customer     Customer         `json:"customer"`
 	AssignedUser AssignedUser     `json:"assigned_user"`
 	Stage        Stage            `json:"stage"`
-	CreateDate   nulls.NullTime   `json:"create_date"`
 }
 
 type HelpdeskTicketFormView struct {
@@ -52,19 +67,11 @@ type HelpdeskTicketFormView struct {
 	Customer          Customer         `json:"customer"`
 	AssignedUser      AssignedUser     `json:"assigned_user"`
 	Stage             Stage            `json:"stage"`
-	CreateDate        nulls.NullTime   `json:"create_date"`
 }
 
 type HelpdeskTicketMessage struct {
-	MessageID             string           `json:"message_id"`
-	MessageAuthor         nulls.NullString `json:"message_author"`
-	MessageBody           nulls.NullString `json:"message_body"`
-	MessagePublished      nulls.NullTime   `json:"message_published"`
-	AttachmentName        nulls.NullString `json:"attachment_name"`
-	AttachmentType        nulls.NullString `json:"attachment_type"`
-	AttachmentMimeType    nulls.NullString `json:"attachment_mimetype"`
-	AttachmentDescription nulls.NullString `json:"attachment_description"`
-	AttachmentURL         nulls.NullString `json:"attachment_url"`
+	Message    Message    `json:"message"`
+	Attachment Attachment `json:"attachment"`
 }
 
 type HelpdeskQueryParams struct {

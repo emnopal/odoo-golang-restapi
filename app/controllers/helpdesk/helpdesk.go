@@ -93,7 +93,7 @@ func (attr *HelpdeskController) GetHelpdeskTicket(c *gin.Context) {
 	Helpdesk := &helpdesk.Helpdesk{}
 
 	if params.Search != "" {
-		result, err := Helpdesk.GetHelpdeskBy(params)
+		result, err := Helpdesk.GetHelpdeskTicketBy(params)
 		j := &send.JsonSendGetHandler{GinContext: c}
 		if err != nil {
 			if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
@@ -162,6 +162,52 @@ func (attr *HelpdeskController) GetHelpdeskTicketStageById(c *gin.Context) {
 	Helpdesk := &helpdesk.Helpdesk{}
 	id := c.Param("id")
 	result, err := Helpdesk.GetHelpdeskTicketStageFromId(id, c)
+	j := &send.JsonSendGetHandler{GinContext: c}
+	if err != nil {
+		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+			err = errors.New("null result")
+			j.CustomErrorRespStatus = http.StatusNotFound
+		}
+	}
+	j.SendJsonGet(result, err)
+}
+
+func (attr *HelpdeskController) GetHelpdeskTicketMessage(c *gin.Context) {
+	params := attr.HelpdeskTicketQueryParamsHandler(c)
+	params.Sort = "message_published desc"
+	Helpdesk := &helpdesk.Helpdesk{}
+	ticket_id := c.Param("ticket_id")
+
+	if params.Search != "" {
+		result, err := Helpdesk.GetHelpdeskTicketMessageBy(ticket_id, params)
+		j := &send.JsonSendGetHandler{GinContext: c}
+		if err != nil {
+			if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+				err = errors.New("null result")
+				j.CustomErrorRespStatus = http.StatusNotFound
+			}
+		}
+		j.SendJsonGet(result, err)
+		return
+	}
+
+	result, err := Helpdesk.GetHelpdeskTicketMessage(ticket_id, params)
+	j := &send.JsonSendGetHandler{GinContext: c}
+	if err != nil {
+		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
+			err = errors.New("null result")
+			j.CustomErrorRespStatus = http.StatusNotFound
+		}
+	}
+	j.SendJsonGet(result, err)
+}
+
+func (attr *HelpdeskController) GetHelpdeskTicketMessageById(c *gin.Context) {
+	Helpdesk := &helpdesk.Helpdesk{}
+	ticket_id := c.Param("ticket_id")
+	message_id := c.Param("message_id")
+
+	result, err := Helpdesk.GetHelpdeskTicketMessageFromId(ticket_id, message_id, c)
 	j := &send.JsonSendGetHandler{GinContext: c}
 	if err != nil {
 		if err.Error() == "404" || err.Error() == "null" || err.Error() == "null result" {
