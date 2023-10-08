@@ -17,8 +17,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Helpdesk Ticket
-func (h *Helpdesk) GetHelpdeskTicket(params *db_schema.HelpdeskQueryParams) (result *res.ResultGetData, err error) {
+// Helpdesk Ticket Stage
+func (h *Helpdesk) GetHelpdeskTicketStage(params *db_schema.HelpdeskQueryParams) (result *res.ResultGetData, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
@@ -33,28 +33,11 @@ func (h *Helpdesk) GetHelpdeskTicket(params *db_schema.HelpdeskQueryParams) (res
 	lang := params.Lang
 
 	rawQuery := `
-		WITH res_users_denorm AS (
-			SELECT ru.id id, rp.name name FROM res_users ru
-			JOIN res_partner rp ON ru.partner_id = rp.id
-		), helpdesk_stage_list_view AS (
+		WITH helpdesk_stage_list_view AS (
 			SELECT
-				t.id id,
-				t.client_id company_id,
-				tc.name::json->$1 company_name,
-				t.partner_id customer_id,
-				tp.name customer_name,
-				t.number ticket_number,
-				t.name ticket_issue,
-				t.create_date reported_on,
-				t.user_id assigned_to_id,
-				tu.name assigned_to_name,
-				t.stage_id stage_id,
-				ts.name::json->$1 stage_name
-			FROM helpdesk_ticket t
-			LEFT JOIN helpdesk_ticket_client tc ON t.client_id = tc.id
-			LEFT JOIN res_partner tp ON t.partner_id = tp.id
-			LEFT JOIN res_users_denorm tu ON t.user_id = tu.id
-			LEFT JOIN helpdesk_stage ts ON t.stage_id = ts.id
+				id, name::json->$1 name, sequence
+			FROM helpdesk_stage
+			WHERE active=True
 		)
 	`
 
@@ -72,7 +55,7 @@ func (h *Helpdesk) GetHelpdeskTicket(params *db_schema.HelpdeskQueryParams) (res
 	// prevent sql injection by filtering with regex
 	sortValidation, err := regexp.Compile("[a-zA-Z0-9 +%_]*$")
 	if !sortValidation.MatchString(sort) {
-		sort = "id"
+		sort = "sequence"
 	}
 
 	sort = strings.Replace(sort, "+", " ", -1)
@@ -87,11 +70,7 @@ func (h *Helpdesk) GetHelpdeskTicket(params *db_schema.HelpdeskQueryParams) (res
 	query := fmt.Sprintf(`
 		%s
 		SELECT
-			id, ticket_number, ticket_issue, reported_on,
-			company_id, company_name,
-			customer_id, customer_name,
-			assigned_to_id, assigned_to_name,
-			stage_id, stage_name
+			id, name, sequence
 		FROM helpdesk_stage_list_view ORDER BY %s
 	`, rawQuery, sort)
 
@@ -110,21 +89,17 @@ func (h *Helpdesk) GetHelpdeskTicket(params *db_schema.HelpdeskQueryParams) (res
 	}
 
 	// get the data to struct
-	var Ticket db_schema.HelpdeskTicketListView
-	var dataResult []db_schema.HelpdeskTicketListView
+	var Stage db_schema.HelpdeskStage
+	var dataResult []db_schema.HelpdeskStage
 	for Data.Next() {
 		err = Data.Scan(
-			&Ticket.ID, &Ticket.TicketNumber, &Ticket.TicketIssue, &Ticket.ReportedOn,
-			&Ticket.Company.ID, &Ticket.Company.Name,
-			&Ticket.Customer.ID, &Ticket.Customer.Name,
-			&Ticket.AssignedUser.ID, &Ticket.AssignedUser.Name,
-			&Ticket.Stage.ID, &Ticket.Stage.Name,
+			&Stage.ID, &Stage.Name, &Stage.Sequence,
 		)
 		if err != nil {
 			log.Println("Query error occured: ", err.Error())
 			return nil, err
 		}
-		dataResult = append(dataResult, Ticket)
+		dataResult = append(dataResult, Stage)
 	}
 	defer Data.Close()
 
@@ -150,7 +125,7 @@ func (h *Helpdesk) GetHelpdeskTicket(params *db_schema.HelpdeskQueryParams) (res
 }
 
 // get by id must be singleton
-func (h *Helpdesk) GetHelpdeskTicketFromId(id string, c *gin.Context) (result *res.ResultGetData, err error) {
+func (h *Helpdesk) GetHelpdeskTicketStageFromId(id string, c *gin.Context) (result *res.ResultGetData, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
@@ -162,52 +137,25 @@ func (h *Helpdesk) GetHelpdeskTicketFromId(id string, c *gin.Context) (result *r
 
 	// get data
 	// generate query
-	var Ticket db_schema.HelpdeskTicketFormView
+	var Stage db_schema.HelpdeskStage
 	rawQuery := `
-		WITH res_users_denorm AS (
-			SELECT ru.id id, rp.name name FROM res_users ru
-			JOIN res_partner rp ON ru.partner_id = rp.id
-		), helpdesk_stage_form_view AS (
+		WITH helpdesk_stage_form_view AS (
 			SELECT
-				t.id id,
-				t.client_id company_id,
-				tc.name::json->$1 company_name,
-				t.partner_id customer_id,
-				tp.name customer_name,
-				t.number ticket_number,
-				t.name ticket_issue,
-				t.create_date reported_on,
-				t.user_id assigned_to_id,
-				tu.name assigned_to_name,
-				t.stage_id stage_id,
-				ts.name::json->$1 stage_name,
-				t.description description
-			FROM helpdesk_ticket t
-			LEFT JOIN helpdesk_ticket_client tc ON t.client_id = tc.id
-			LEFT JOIN res_partner tp ON t.partner_id = tp.id
-			LEFT JOIN res_users_denorm tu ON t.user_id = tu.id
-			LEFT JOIN helpdesk_stage ts ON t.stage_id = ts.id
+				id, name::json->$1 name, sequence
+			FROM helpdesk_stage
+			WHERE active = True
 		)
 	`
 	query := fmt.Sprintf(`
 		%s
 		SELECT
-			id, ticket_number, ticket_issue, reported_on, description,
-			company_id, company_name,
-			customer_id, customer_name,
-			assigned_to_id, assigned_to_name,
-			stage_id, stage_name
+			id, name, sequence
 		FROM helpdesk_stage_form_view WHERE id = $2
 	`, rawQuery)
 
 	// since get by id must be singleton, so better to us QueryRow
 	err = db.QueryRow(query, lang, id).Scan(
-		&Ticket.ID, &Ticket.TicketNumber, &Ticket.TicketIssue,
-		&Ticket.ReportedOn, &Ticket.TicketDescription,
-		&Ticket.Company.ID, &Ticket.Company.Name,
-		&Ticket.Customer.ID, &Ticket.Customer.Name,
-		&Ticket.AssignedUser.ID, &Ticket.AssignedUser.Name,
-		&Ticket.Stage.ID, &Ticket.Stage.Name,
+		&Stage.ID, &Stage.Name, &Stage.Sequence,
 	)
 
 	// raise error if query not available
@@ -222,12 +170,12 @@ func (h *Helpdesk) GetHelpdeskTicketFromId(id string, c *gin.Context) (result *r
 		Length:      1,
 		TotalPage:   0,
 		CurrentPage: 0,
-		Result:      Ticket,
+		Result:      Stage,
 	}
 	return
 }
 
-func (h *Helpdesk) GetHelpdeskTicketBy(params *db_schema.HelpdeskQueryParams) (result *res.ResultGetData, err error) {
+func (h *Helpdesk) GetHelpdeskTicketStageBy(params *db_schema.HelpdeskQueryParams) (result *res.ResultGetData, err error) {
 	// initialize database
 	db, err := config.DBConfig()
 	if err != nil {
@@ -254,38 +202,16 @@ func (h *Helpdesk) GetHelpdeskTicketBy(params *db_schema.HelpdeskQueryParams) (r
 	}
 
 	rawQuery := `
-		WITH res_users_denorm AS (
-			SELECT ru.id id, rp.name name FROM res_users ru
-			JOIN res_partner rp ON ru.partner_id = rp.id
-		), helpdesk_stage_form_view AS (
-			SELECT
-				t.id id,
-				t.client_id company_id,
-				tc.name::json->$1::text company_name,
-				t.partner_id customer_id,
-				tp.name customer_name,
-				t.number ticket_number,
-				t.name ticket_issue,
-				t.create_date reported_on,
-				t.user_id assigned_to_id,
-				tu.name assigned_to_name,
-				t.stage_id stage_id,
-				ts.name::json->$1::text stage_name,
-				t.description description
-			FROM helpdesk_ticket t
-			LEFT JOIN helpdesk_ticket_client tc ON t.client_id = tc.id
-			LEFT JOIN res_partner tp ON t.partner_id = tp.id
-			LEFT JOIN res_users_denorm tu ON t.user_id = tu.id
-			LEFT JOIN helpdesk_stage ts ON t.stage_id = ts.id
-		)
-	`
+			WITH helpdesk_stage_list_view AS (
+				SELECT
+					id, name::json->$1 name, sequence
+				FROM helpdesk_stage
+				WHERE active=True
+			)
+		`
 
 	colsToFind := []string{
-		"id", "ticket_number", "ticket_issue", "reported_on",
-		"company_id", "company_name",
-		"customer_id", "customer_name",
-		"assigned_to_id", "assigned_to_name",
-		"stage_id", "stage_name", "description",
+		"id", "name", "sequence",
 	}
 
 	// colsStr := strings.Join(cols, ", ")
@@ -294,7 +220,7 @@ func (h *Helpdesk) GetHelpdeskTicketBy(params *db_schema.HelpdeskQueryParams) (r
 	var appendLengthQueryString string
 	var appendLengthQuery []string
 	for _, col := range colsToFind {
-		appendLengthQueryString = fmt.Sprintf(`(SELECT "id" FROM helpdesk_stage_form_view WHERE "%s"::TEXT ILIKE '%%' || $2 || '%%')`, col)
+		appendLengthQueryString = fmt.Sprintf(`(SELECT "id" FROM helpdesk_stage_list_view WHERE "%s"::TEXT ILIKE '%%' || $2 || '%%')`, col)
 		appendLengthQuery = append(appendLengthQuery, appendLengthQueryString)
 	}
 	lengthQuery := strings.Join(appendLengthQuery, joinQuery)
@@ -312,8 +238,9 @@ func (h *Helpdesk) GetHelpdeskTicketBy(params *db_schema.HelpdeskQueryParams) (r
 	// prevent sql injection by filtering with regex
 	sortValidation, err := regexp.Compile("[a-zA-Z0-9 +%_]*$")
 	if !sortValidation.MatchString(sort) {
-		sort = "id"
+		sort = "sequence"
 	}
+
 	sort = strings.Replace(sort, "+", " ", -1)
 	sort = strings.Replace(sort, "%20", " ", -1)
 	sort = strings.Replace(sort, "%2C", ",", -1)
@@ -322,11 +249,7 @@ func (h *Helpdesk) GetHelpdeskTicketBy(params *db_schema.HelpdeskQueryParams) (r
 	offset := page * limit
 
 	colsToShow := []string{
-		"id", "ticket_number", "ticket_issue", "reported_on",
-		"company_id", "company_name::TEXT",
-		"customer_id", "customer_name",
-		"assigned_to_id", "assigned_to_name",
-		"stage_id", "stage_name::TEXT",
+		"id", "name::TEXT", "sequence",
 	}
 
 	colsToShowStr := strings.Join(colsToShow, ", ")
@@ -335,7 +258,7 @@ func (h *Helpdesk) GetHelpdeskTicketBy(params *db_schema.HelpdeskQueryParams) (r
 	var query string
 	var appendQuery []string
 	for _, col := range colsToFind {
-		query = fmt.Sprintf(`(SELECT %s FROM helpdesk_stage_form_view WHERE %s::TEXT ILIKE '%%' || $2 || '%%' ORDER BY %s`, colsToShowStr, col, sort)
+		query = fmt.Sprintf(`(SELECT %s FROM helpdesk_stage_list_view WHERE %s::TEXT ILIKE '%%' || $2 || '%%' ORDER BY %s`, colsToShowStr, col, sort)
 		if !ignorePerformance {
 			query = query + ` OFFSET $3 LIMIT $4`
 		}
@@ -361,26 +284,23 @@ func (h *Helpdesk) GetHelpdeskTicketBy(params *db_schema.HelpdeskQueryParams) (r
 
 	// raise error when Data is not available
 	if Data == nil {
+		log.Println(err)
 		err = errors.New("404")
 		return nil, err
 	}
 
 	// get the data to struct
-	var Ticket db_schema.HelpdeskTicketListView
-	var dataResult []db_schema.HelpdeskTicketListView
+	var Stage db_schema.HelpdeskStage
+	var dataResult []db_schema.HelpdeskStage
 	for Data.Next() {
 		err = Data.Scan(
-			&Ticket.ID, &Ticket.TicketNumber, &Ticket.TicketIssue, &Ticket.ReportedOn,
-			&Ticket.Company.ID, &Ticket.Company.Name,
-			&Ticket.Customer.ID, &Ticket.Customer.Name,
-			&Ticket.AssignedUser.ID, &Ticket.AssignedUser.Name,
-			&Ticket.Stage.ID, &Ticket.Stage.Name,
+			&Stage.ID, &Stage.Name, &Stage.Sequence,
 		)
 		if err != nil {
 			log.Println("Query error occured: ", err.Error())
 			return nil, err
 		}
-		dataResult = append(dataResult, Ticket)
+		dataResult = append(dataResult, Stage)
 	}
 	defer Data.Close()
 

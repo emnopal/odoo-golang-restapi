@@ -44,6 +44,7 @@ type Attachment struct {
 	AttachmentMimeType    nulls.NullString `json:"attachment_mimetype"`
 	AttachmentDescription nulls.NullString `json:"attachment_description"`
 	AttachmentURL         nulls.NullString `json:"attachment_url"`
+	AttachmentAccessToken nulls.NullString `json:"attachment_access_token"`
 }
 
 type HelpdeskTicketListView struct {
